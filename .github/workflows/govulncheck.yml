@@ -1,0 +1,22 @@
+name: govulncheck
+on:
+  schedule:
+  - cron: 22 2 * * *
+jobs:
+  govulncheck:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+    - name: go-version
+      id: go-version
+      run: |
+        echo go-version="$(awk '/GO_VERSION:/ { print $2 }' .github/workflows/main.yml | tr -d \')" >> ${GITHUB_OUTPUT}
+    - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9
+      with:
+        go-version: ${{ steps.go-version.outputs.go-version }}
+    - name: install
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+    - name: run
+      run: |
+        govulncheck ./...
